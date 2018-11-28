@@ -39,7 +39,7 @@ import com.alibaba.otter.canal.protocol.Message;
 import com.alibaba.otter.canal.server.embedded.CanalServerWithEmbedded;
 import com.alibaba.otter.canal.server.netty.NettyUtils;
 import com.alibaba.otter.canal.server.netty.listener.ChannelFutureAggregator;
-import com.codahale.metrics.MetricsHolder;
+import com.codahale.metrics.MetricsHandler;
 import com.codahale.metrics.Timer;
 import com.codahale.metrics.Timer.Context;
 import com.google.protobuf.ByteString;
@@ -51,8 +51,8 @@ public class SessionHandler extends SimpleChannelHandler {
 
     private static final Logger     logger = LoggerFactory.getLogger(SessionHandler.class);
     private CanalServerWithEmbedded embeddedServer;
-    private final Timer etimer = MetricsHolder.timer("Client-Entry-Timer");
-    private final Timer rtimer = MetricsHolder.timer("Client-Row-Timer");
+    private final Timer etimer = MetricsHandler.timer("Client-Entry-Timer");
+    private final Timer rtimer = MetricsHandler.timer("Client-Row-Timer");
     public SessionHandler(){
     }
 

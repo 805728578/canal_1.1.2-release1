@@ -1,6 +1,6 @@
 package com.codahale.metrics;
 
-public class MetricsHolder {
+public class MetricsHandler {
 	private static MetricRegistry registry = new MetricRegistry();
 	public static ConsoleReporter console(){
 		ConsoleReporter console = ConsoleReporter.forRegistry(registry).build();

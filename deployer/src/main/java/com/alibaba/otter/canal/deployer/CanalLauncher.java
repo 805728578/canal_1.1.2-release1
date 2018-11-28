@@ -14,7 +14,7 @@ import com.alibaba.otter.canal.rocketmq.CanalRocketMQProducer;
 import com.alibaba.otter.canal.server.CanalMQStarter;
 import com.alibaba.otter.canal.spi.CanalMQProducer;
 import com.codahale.metrics.ConsoleReporter;
-import com.codahale.metrics.MetricsHolder;
+import com.codahale.metrics.MetricsHandler;
 /**
  * canal独立版本启动的入口类
  *
@@ -53,7 +53,7 @@ public class CanalLauncher {
                 // disable netty
                 System.setProperty(CanalConstants.CANAL_WITHOUT_NETTY, "true");
             }
-            final ConsoleReporter console = MetricsHolder.console();
+            final ConsoleReporter console = MetricsHandler.console();
             console.start(5, TimeUnit.SECONDS);
             logger.info("## start the canal server.");
             final CanalController controller = new CanalController(properties);

@@ -25,7 +25,7 @@ import com.alibaba.otter.canal.protocol.CanalEntry.RowData;
 import com.alibaba.otter.canal.protocol.CanalEntry.TransactionBegin;
 import com.alibaba.otter.canal.protocol.CanalEntry.TransactionEnd;
 import com.codahale.metrics.ConsoleReporter;
-import com.codahale.metrics.MetricsHolder;
+import com.codahale.metrics.MetricsHandler;
 import com.codahale.metrics.Timer;
 import com.codahale.metrics.Timer.Context;
 import com.alibaba.otter.canal.protocol.CanalEntry;
@@ -59,10 +59,10 @@ public class AbstractCanalClientTest {
     protected static String                   row_format         = null;
     protected static String                   transaction_format = null;
     protected String                          destination;
-    protected static volatile ConsoleReporter console = MetricsHolder.console();
-    private static final Timer mtimer = MetricsHolder.timer("Canal-Client-Message-Timer");
-    private static final Timer etimer = MetricsHolder.timer("Canal-Client-Entry-Timer");
-    private static final Timer rtimer = MetricsHolder.timer("Canal-Client-Row-Timer");
+    protected static volatile ConsoleReporter console = MetricsHandler.console();
+    private static final Timer mtimer = MetricsHandler.timer("Canal-Client-Message-Timer");
+    private static final Timer etimer = MetricsHandler.timer("Canal-Client-Entry-Timer");
+    private static final Timer rtimer = MetricsHandler.timer("Canal-Client-Row-Timer");
     static {
         context_format = SEP + "****************************************************" + SEP;
         context_format += "* Batch Id: [{}] ,count : [{}] , memsize : [{}] , Time : {}" + SEP;
@@ -109,7 +109,7 @@ public class AbstractCanalClientTest {
             return;
         }
         console.close();
-        connector.stopRunning();
+        connector.disconnect();
         running = false;
         if (thread != null) {
             try {

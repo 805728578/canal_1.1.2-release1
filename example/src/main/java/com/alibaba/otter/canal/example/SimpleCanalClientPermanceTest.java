@@ -2,6 +2,7 @@ package com.alibaba.otter.canal.example;
 
 import java.net.InetSocketAddress;
 import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

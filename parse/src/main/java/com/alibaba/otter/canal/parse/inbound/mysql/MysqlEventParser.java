@@ -35,7 +35,7 @@ import com.alibaba.otter.canal.protocol.CanalEntry.RowChange;
 import com.alibaba.otter.canal.protocol.CanalEntry.RowData;
 import com.alibaba.otter.canal.protocol.position.EntryPosition;
 import com.alibaba.otter.canal.protocol.position.LogPosition;
-import com.codahale.metrics.MetricsHolder;
+import com.codahale.metrics.MetricsHandler;
 import com.codahale.metrics.Timer;
 import com.codahale.metrics.Timer.Context;
 import com.google.protobuf.ByteString;
@@ -79,8 +79,8 @@ public class MysqlEventParser extends AbstractMysqlEventParser implements CanalE
     private int                  dumpErrorCount                    = 0;        // binlogDump失败异常计数
     private int                  dumpErrorCountThreshold           = 2;        // binlogDump失败异常计数阀值
     private boolean              rdsOssMode                        = false;
-    private final Timer etimer = MetricsHolder.timer("Canal-Entry-Timer");
-    private final Timer rtimer = MetricsHolder.timer("Canal-Row-Timer");
+    private final Timer etimer = MetricsHandler.timer("Canal-Entry-Timer");
+    private final Timer rtimer = MetricsHandler.timer("Canal-Row-Timer");
 
     protected ErosaConnection buildErosaConnection() {
         return buildMysqlConnection(this.runningInfo);
