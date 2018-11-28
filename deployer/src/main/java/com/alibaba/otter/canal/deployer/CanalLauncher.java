@@ -2,6 +2,7 @@ package com.alibaba.otter.canal.deployer;
 
 import java.io.FileInputStream;
 import java.util.Properties;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
@@ -12,7 +13,8 @@ import com.alibaba.otter.canal.kafka.CanalKafkaProducer;
 import com.alibaba.otter.canal.rocketmq.CanalRocketMQProducer;
 import com.alibaba.otter.canal.server.CanalMQStarter;
 import com.alibaba.otter.canal.spi.CanalMQProducer;
-
+import com.codahale.metrics.ConsoleReporter;
+import com.codahale.metrics.MetricsHolder;
 /**
  * canal独立版本启动的入口类
  *
@@ -51,7 +53,8 @@ public class CanalLauncher {
                 // disable netty
                 System.setProperty(CanalConstants.CANAL_WITHOUT_NETTY, "true");
             }
-
+            final ConsoleReporter console = MetricsHolder.console();
+            console.start(5, TimeUnit.SECONDS);
             logger.info("## start the canal server.");
             final CanalController controller = new CanalController(properties);
             controller.start();
@@ -62,6 +65,7 @@ public class CanalLauncher {
                     try {
                         logger.info("## stop the canal server");
                         controller.stop();
+                        console.stop();
                     } catch (Throwable e) {
                         logger.warn("##something goes wrong when stopping canal Server:", e);
                     } finally {
