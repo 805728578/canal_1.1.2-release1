@@ -117,25 +117,22 @@
 		<property name="logPositionManager">
 			<bean class="com.alibaba.otter.canal.parse.index.FailbackLogPositionManager">
 				<constructor-arg>
-				  <bean class="com.alibaba.otter.canal.parse.index.PeriodMixedLogPositionManager">
-				      <constructor-arg>
-					    <bean class="com.alibaba.otter.canal.parse.index.MemoryLogPositionManager">
-					    </bean>
-					  </constructor-arg>
-					  <constructor-arg ref="zooKeeperLogPositionManager"/>
-					  <constructor-arg type ="long">
-					  <value>1000</value>
-					  </constructor-arg>
-				 </bean>
-			   </constructor-arg>
+					<bean class="com.alibaba.otter.canal.parse.index.PeriodMixedLogPositionManager">
+						<constructor-arg>
+							<bean class="com.alibaba.otter.canal.parse.index.MemoryLogPositionManager" />
+						</constructor-arg>
+						<constructor-arg ref="zooKeeperLogPositionManager" />
+						<constructor-arg type="long" value="1000" />
+					</bean>
+				</constructor-arg>
 				<constructor-arg>
 					<bean class="com.alibaba.otter.canal.parse.index.MetaLogPositionManager">
-						<constructor-arg ref="metaManager"/>
+						<constructor-arg ref="metaManager" />
 					</bean>
 				</constructor-arg>
 			</bean>
 		</property>
-		<property name="logPositionManager">
+		<!-- <property name="logPositionManager">
 			<bean class="com.alibaba.otter.canal.parse.index.FailbackLogPositionManager">
 				<constructor-arg>
 					<bean class="com.alibaba.otter.canal.parse.index.MemoryLogPositionManager" />
@@ -146,7 +143,7 @@
 					</bean>
 				</constructor-arg>
 			</bean>
-		</property>
+		</property> -->
 		
 		<!-- failover切换时回退的时间 -->
 		<property name="fallbackIntervalInSeconds" value="${canal.instance.fallbackIntervalInSeconds:60}" />
