@@ -59,6 +59,25 @@
 		</sift>
 	</appender>
 	
+	<appender name="METRIC" class="ch.qos.logback.core.rolling.RollingFileAppender">
+		<File>../logs/server-metric.log</File>
+		<rollingPolicy
+				class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+			<!-- rollover daily -->
+			<fileNamePattern>../logs/%d{yyyy-MM-dd}/server-metric-%d{yyyy-MM-dd}-%i.log.gz</fileNamePattern>
+			<timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
+				<!-- or whenever the file size reaches 100MB -->
+				<maxFileSize>512MB</maxFileSize>
+			</timeBasedFileNamingAndTriggeringPolicy>
+			<maxHistory>60</maxHistory>
+		</rollingPolicy>
+		<encoder>
+			<pattern>
+				%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{56} - %msg%n
+			</pattern>
+		</encoder>
+	</appender>
+	
 	<logger name="com.alibaba.otter.canal.example.AbstractCanalClientTest" additivity="false">  
         <level value="INFO" />  
         <appender-ref ref="ENTRY_LOG" />
@@ -68,6 +87,7 @@
 		<!--  
 		<appender-ref ref="STDOUT"/>
 		-->
+		<appender-ref ref="METRIC"/>
 		<appender-ref ref="CANAL-ROOT" />
 	</root>
 </configuration>
