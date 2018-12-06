@@ -13,12 +13,13 @@ base=${bin_abs_path}/..
 client_mode="Cluster"
 logback_configurationFile=$base/conf/logback.xml
 
-canal_destination=example
-canal_zookeeper=127.0.0.1:2181
-canal_batch_size=5120
-canal_sleep_time=1
-canal_ip=127.0.0.1
-canal_port=11111
+canal_destination=`sed '/canal.destination/!d;s/.*=//' $base/conf/example.properties | tr -d '\r'`
+canal_zookeeper=`sed '/canal.zookeeper/!d;s/.*=//' $base/conf/example.properties | tr -d '\r'`
+canal_batch_size=`sed '/canal.batch.size/!d;s/.*=//' $base/conf/example.properties | tr -d '\r'`
+canal_sleep_time=`sed '/canal.sleep.time/!d;s/.*=//' $base/conf/example.properties | tr -d '\r'`
+canal_ip=`sed '/canal.ip/!d;s/.*=//' $base/conf/example.properties | tr -d '\r'`
+canal_port=`sed '/canal.port/!d;s/.*=//' $base/conf/example.properties | tr -d '\r'`
+canal_metric_period=`sed '/canal.metric.period/!d;s/.*=//' $base/conf/example.properties | tr -d '\r'`
 
 export LANG=en_US.UTF-8
 export BASE=$base
@@ -75,7 +76,7 @@ fi
 
 JAVA_OPTS=" $JAVA_OPTS -Djava.awt.headless=true -Djava.net.preferIPv4Stack=true -Dfile.encoding=UTF-8"
 CANAL_OPTS="-DappName=otter-canal-example -Dlogback.configurationFile=$logback_configurationFile"
-CANAL_OPTS="$CANAL_OPTS -Dcanal.destination=${canal_destination} -Dcanal.zookeeper=${canal_zookeeper} -Dcanal.batch.size=${canal_batch_size} -Dcanal.sleep.time=${canal_sleep_time} -Dcanal.ip=${canal_ip} -Dcanal.port=${canal_port}"
+CANAL_OPTS="$CANAL_OPTS -Dcanal.destination=${canal_destination} -Dcanal.zookeeper=${canal_zookeeper} -Dcanal.batch.size=${canal_batch_size} -Dcanal.sleep.time=${canal_sleep_time} -Dcanal.ip=${canal_ip} -Dcanal.port=${canal_port} -Dcanal.metric.period=${canal_metric_period}"
 
 if [ -e $logback_configurationFile ]
 then 

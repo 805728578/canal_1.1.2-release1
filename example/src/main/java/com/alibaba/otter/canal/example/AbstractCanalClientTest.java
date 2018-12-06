@@ -94,13 +94,20 @@ public class AbstractCanalClientTest {
 
     protected void start() {
         Assert.notNull(connector, "connector is null");
-        console.start(5, TimeUnit.SECONDS);
+        
         thread = new Thread(new Runnable() {
 
             public void run() {
                 process();
             }
         });
+        
+        int period = 5;
+        if(!StringUtil.isNullOrEmpty(System.getProperty("canal.metric.period"))){
+        	period = Integer.valueOf(System.getProperty("canal.metric.period"));
+        	logger.warn("period:"+period);
+        }
+        console.start(period, TimeUnit.SECONDS);
         schedule.scheduleAtFixedRate(new Runnable() {
 			@Override
 			public void run() {
@@ -112,7 +119,8 @@ public class AbstractCanalClientTest {
 					e.printStackTrace();
 				}
 			}
-		}, 1, 5, TimeUnit.SECONDS);
+		}, period, period, TimeUnit.SECONDS);
+        
         thread.setUncaughtExceptionHandler(handler);
         running = true;
         thread.start();
