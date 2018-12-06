@@ -4,8 +4,10 @@ import java.io.UnsupportedEncodingException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
-import com.alibaba.otter.canal.protocol.CanalEntry;
+
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.SystemUtils;
 import org.slf4j.Logger;
@@ -15,6 +17,7 @@ import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 
 import com.alibaba.otter.canal.client.CanalConnector;
+import com.alibaba.otter.canal.protocol.CanalEntry;
 import com.alibaba.otter.canal.protocol.CanalEntry.Column;
 import com.alibaba.otter.canal.protocol.CanalEntry.Entry;
 import com.alibaba.otter.canal.protocol.CanalEntry.EntryType;
@@ -24,12 +27,11 @@ import com.alibaba.otter.canal.protocol.CanalEntry.RowChange;
 import com.alibaba.otter.canal.protocol.CanalEntry.RowData;
 import com.alibaba.otter.canal.protocol.CanalEntry.TransactionBegin;
 import com.alibaba.otter.canal.protocol.CanalEntry.TransactionEnd;
+import com.alibaba.otter.canal.protocol.Message;
 import com.codahale.metrics.ConsoleReporter;
 import com.codahale.metrics.MetricsHandler;
 import com.codahale.metrics.Timer;
 import com.codahale.metrics.Timer.Context;
-import com.alibaba.otter.canal.protocol.CanalEntry;
-import com.alibaba.otter.canal.protocol.Message;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.InvalidProtocolBufferException;
 
@@ -60,6 +62,7 @@ public class AbstractCanalClientTest {
     protected static String                   transaction_format = null;
     protected String                          destination;
     protected static volatile ConsoleReporter console = MetricsHandler.console();
+    protected static volatile ScheduledExecutorService schedule = Executors.newScheduledThreadPool(Runtime.getRuntime().availableProcessors()*2);
     private static final Timer mtimer = MetricsHandler.timer("Canal-Client-Message-Timer");
     private static final Timer etimer = MetricsHandler.timer("Canal-Client-Entry-Timer");
     private static final Timer rtimer = MetricsHandler.timer("Canal-Client-Row-Timer");
@@ -98,7 +101,18 @@ public class AbstractCanalClientTest {
                 process();
             }
         });
-
+        schedule.scheduleAtFixedRate(new Runnable() {
+			@Override
+			public void run() {
+				try {
+					String info = MetricsHandler.printlnTimers();
+					logger.info(info);
+				} catch (Exception e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+		}, 1, 5, TimeUnit.SECONDS);
         thread.setUncaughtExceptionHandler(handler);
         running = true;
         thread.start();
@@ -118,7 +132,7 @@ public class AbstractCanalClientTest {
                 // ignore
             }
         }
-
+        schedule.shutdown();
         MDC.remove("destination");
     }
 
