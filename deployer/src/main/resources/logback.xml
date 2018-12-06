@@ -78,7 +78,7 @@
 		</encoder>
 	</appender>
 	
-	<logger name="com.alibaba.otter.canal.instance" additivity="false">  
+	<logger name="com.alibaba" additivity="false">  
         <level value="ERROR" />  
         <appender-ref ref="STDERR" />
     </logger>
