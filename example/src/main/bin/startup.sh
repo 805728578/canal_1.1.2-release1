@@ -23,7 +23,7 @@ canal_port=11111
 export LANG=en_US.UTF-8
 export BASE=$base
 
-if [ -f $base/bin/canal.pid ] ; then
+if [ -f $base/conf/canal.pid ] ; then
 	echo "found canal.pid , Please run stop.sh first ,then startup.sh" 2>&2
     exit 1
 fi
