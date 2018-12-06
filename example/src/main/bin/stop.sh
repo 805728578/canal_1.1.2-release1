@@ -25,7 +25,7 @@ get_pid() {
 }
 
 base=`dirname $0`/..
-pidfile=$base/bin/canal.pid
+pidfile=$base/conf/canal.pid
 if [ ! -f "$pidfile" ];then
 	echo "canal is not running. exists"
 	exit

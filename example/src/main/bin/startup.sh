@@ -91,12 +91,12 @@ then
 	echo client mode : $client_mode 
 	echo CLASSPATH :$CLASSPATH
 	if [ $client_mode == "Cluster" ] ; then 
-		$JAVA $JAVA_OPTS $JAVA_DEBUG_OPT $CANAL_OPTS -classpath .:$CLASSPATH com.alibaba.otter.canal.example.ClusterCanalClientTest 1>>$base/bin/nohup.out 2>&1 &
+		$JAVA $JAVA_OPTS $JAVA_DEBUG_OPT $CANAL_OPTS -classpath .:$CLASSPATH com.alibaba.otter.canal.example.ClusterCanalClientTest 1>>$base/logs/metric.log 2>&1 &
 	else 
-		$JAVA $JAVA_OPTS $JAVA_DEBUG_OPT $CANAL_OPTS -classpath .:$CLASSPATH com.alibaba.otter.canal.example.SimpleCanalClientTest 1>>$base/bin/nohup.out 2>&1 &
+		$JAVA $JAVA_OPTS $JAVA_DEBUG_OPT $CANAL_OPTS -classpath .:$CLASSPATH com.alibaba.otter.canal.example.SimpleCanalClientTest 1>>$base/logs/metric.log 2>&1 &
 	fi
 	
-	echo $! > $base/bin/canal.pid 
+	echo $! > $base/conf/canal.pid 
 	echo "cd to $current_path for continue"
   	cd $current_path
 else 
