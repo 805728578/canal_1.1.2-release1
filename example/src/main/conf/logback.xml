@@ -78,6 +78,11 @@
 		</encoder>
 	</appender>
 	
+	<logger name="com.codahale.metrics.MetricsHandler" additivity="false">  
+        <level value="INFO" />  
+        <appender-ref ref="METRIC" />
+    </logger>
+    
 	<logger name="com.alibaba.otter.canal.example.AbstractCanalClientTest" additivity="false">  
         <level value="INFO" />  
         <appender-ref ref="ENTRY_LOG" />
@@ -87,7 +92,6 @@
 		<!--  
 		<appender-ref ref="STDOUT"/>
 		-->
-		<appender-ref ref="METRIC"/>
 		<appender-ref ref="CANAL-ROOT" />
 	</root>
 </configuration>

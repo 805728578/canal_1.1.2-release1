@@ -26,6 +26,11 @@
 		</encoder>
 	</appender>
 	
+	<logger name="com.codahale.metrics.MetricsHandler" additivity="false">  
+        <level value="INFO" />  
+        <appender-ref ref="METRIC" />
+    </logger>
+	
 	<appender name="ENTRY_LOG" class="ch.qos.logback.core.ConsoleAppender">
 		<encoder>
 			<pattern>
@@ -41,6 +46,5 @@
 	
 	<root level="INFO">
 		<appender-ref ref="STDOUT"/>
-		<appender-ref ref="METRIC"/>
 	</root>
 </configuration>
