@@ -7,8 +7,15 @@ if "%OS%" == "Windows_NT" set ENV_PATH=%~dp0%
 
 set conf_dir=%ENV_PATH%\..\conf
 set logback_configurationFile=%conf_dir%\logback.xml
-set client_mode=Simple
+set client_mode=Cluster
 if "%1%" != "" set client_mode=%1%
+
+set canal_destination=example
+set canal_zookeeper=127.0.0.1:2181
+set canal_batch_size=5120
+set canal_sleep_time=1
+set canal_ip=127.0.0.1
+set canal_port=11111
 
 set CLASSPATH=%conf_dir%
 set CLASSPATH=%conf_dir%\..\lib\*;%CLASSPATH%
@@ -17,6 +24,7 @@ set JAVA_MEM_OPTS= -Xms128m -Xmx512m -XX:PermSize=128m
 set JAVA_OPTS_EXT= -Djava.awt.headless=true -Djava.net.preferIPv4Stack=true -Dapplication.codeset=UTF-8 -Dfile.encoding=UTF-8
 set JAVA_DEBUG_OPT= -server -Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_socket,address=9199,server=y,suspend=n
 set CANAL_OPTS= -DappName=otter-canal-example -Dlogback.configurationFile="%logback_configurationFile%"
+set CANAL_OPTS= %CANAL_OPTS% -Dcanal.destination="%canal_destination%" -Dcanal.zookeeper="%canal_zookeeper%" -Dcanal.batch.size="%canal_batch_size%" -Dcanal.sleep.time="%canal_sleep_time%" -Dcanal.ip="%canal_ip%" -Dcanal.port="%canal_port%"
 
 set JAVA_OPTS= %JAVA_MEM_OPTS% %JAVA_OPTS_EXT% %JAVA_DEBUG_OPT% %CANAL_OPTS%
 
