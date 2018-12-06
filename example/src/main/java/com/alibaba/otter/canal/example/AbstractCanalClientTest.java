@@ -414,7 +414,7 @@ public class AbstractCanalClientTest {
 						logger.error("[Canal]parse event has error,data:"+entry.toString(),e);
 						return;
 					}
-					if(store.getEventType()==EventType.QUERY||store.hasIsDdl()){
+					if(store.getEventType()==EventType.QUERY||store.getIsDdl()){
 						logger.warn("[Canal]sql:"+store.getSql());
 						return;
 					}
