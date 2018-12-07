@@ -66,6 +66,9 @@ public class AbstractCanalClientTest {
     private static final Timer mtimer = MetricsHandler.timer("Canal-Client-Message-Timer");
     private static final Timer etimer = MetricsHandler.timer("Canal-Client-Entry-Timer");
     private static final Timer rtimer = MetricsHandler.timer("Canal-Client-Row-Timer");
+    private static boolean CANAL_METRIC_DEBUG = true;
+    private static boolean CANAL_DUMP_DEBUG = false;
+    private static boolean CANAL_PARSE_DEBUG = false;
     static {
         context_format = SEP + "****************************************************" + SEP;
         context_format += "* Batch Id: [{}] ,count : [{}] , memsize : [{}] , Time : {}" + SEP;
@@ -105,7 +108,19 @@ public class AbstractCanalClientTest {
         int period = 5;
         if(!StringUtil.isNullOrEmpty(System.getProperty("canal.metric.period"))){
         	period = Integer.valueOf(System.getProperty("canal.metric.period"));
-        	logger.warn("period:"+period);
+        	logger.warn("\tperiod:"+period);
+        }
+        if(!StringUtil.isNullOrEmpty(System.getProperty("canal.metric.debug"))){
+        	CANAL_METRIC_DEBUG = Boolean.valueOf(System.getProperty("canal.metric.debug","true"));
+        	logger.warn("--canal_metric_debug:"+period);
+        }
+        if(!StringUtil.isNullOrEmpty(System.getProperty("canal.dump.debug"))){
+        	CANAL_DUMP_DEBUG = Boolean.valueOf(System.getProperty("canal.dump.debug","false"));
+        	logger.warn("--canal_dump_debug:"+period);
+        }
+        if(!StringUtil.isNullOrEmpty(System.getProperty("canal.parse.debug"))){
+        	CANAL_PARSE_DEBUG = Boolean.valueOf(System.getProperty("canal.parse.debug","false"));
+        	logger.warn("--canal_parse_debug:"+period);
         }
         console.start(period, TimeUnit.SECONDS);
         schedule.scheduleAtFixedRate(new Runnable() {
@@ -113,7 +128,9 @@ public class AbstractCanalClientTest {
 			public void run() {
 				try {
 					String info = MetricsHandler.printlnTimers();
-					logger.info(info);
+					if(CANAL_METRIC_DEBUG) {
+						logger.info(info);
+					}
 				} catch (Exception e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
@@ -148,12 +165,12 @@ public class AbstractCanalClientTest {
         int batchSize = 5 * 1024;
         if(!StringUtil.isNullOrEmpty(System.getProperty("canal.batch.size"))){
         	batchSize = Integer.valueOf(System.getProperty("canal.batch.size"));
-        	logger.warn("batchSize:"+batchSize);
+        	logger.warn("--batchSize:"+batchSize);
         }
         int sleepTime = 0;
         if(!StringUtil.isNullOrEmpty(System.getProperty("canal.sleep.time"))){
         	sleepTime = Integer.valueOf(System.getProperty("canal.sleep.time"));
-        	logger.warn("sleepTime:"+sleepTime);
+        	logger.warn("--sleepTime:"+sleepTime);
         }
         while (running) {
             try {
@@ -174,7 +191,9 @@ public class AbstractCanalClientTest {
                     } else {
                     	Context ctx = mtimer.time();
                     	try{
-	                        printSummary(message, batchId, size);
+                    		if(CANAL_DUMP_DEBUG) {
+                    			printSummary(message, batchId, size);
+                    		}
 	                        printEntry(message.getEntries());
                     	}finally{
                     		ctx.close();
@@ -225,81 +244,83 @@ public class AbstractCanalClientTest {
 
     protected void printEntry(List<Entry> entrys) {
         for (Entry entry : entrys) {
-            long executeTime = entry.getHeader().getExecuteTime();
-            long delayTime = new Date().getTime() - executeTime;
-            Date date = new Date(entry.getHeader().getExecuteTime());
-            SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-
-            if (entry.getEntryType() == EntryType.TRANSACTIONBEGIN || entry.getEntryType() == EntryType.TRANSACTIONEND) {
-                if (entry.getEntryType() == EntryType.TRANSACTIONBEGIN) {
-                    TransactionBegin begin = null;
-                    try {
-                        begin = TransactionBegin.parseFrom(entry.getStoreValue());
-                    } catch (InvalidProtocolBufferException e) {
-                        throw new RuntimeException("parse event has an error , data:" + entry.toString(), e);
-                    }
-                    // 打印事务头信息，执行的线程id，事务耗时
-                    logger.info(transaction_format,
-                        new Object[] { entry.getHeader().getLogfileName(),
-                                String.valueOf(entry.getHeader().getLogfileOffset()),
-                                String.valueOf(entry.getHeader().getExecuteTime()), simpleDateFormat.format(date),
-                                entry.getHeader().getGtid(), String.valueOf(delayTime) });
-                    logger.info(" BEGIN ----> Thread id: {}", begin.getThreadId());
-                    printXAInfo(begin.getPropsList());
-                } else if (entry.getEntryType() == EntryType.TRANSACTIONEND) {
-                    TransactionEnd end = null;
-                    try {
-                        end = TransactionEnd.parseFrom(entry.getStoreValue());
-                    } catch (InvalidProtocolBufferException e) {
-                        throw new RuntimeException("parse event has an error , data:" + entry.toString(), e);
-                    }
-                    // 打印事务提交信息，事务id
-                    logger.info("----------------\n");
-                    logger.info(" END ----> transaction id: {}", end.getTransactionId());
-                    printXAInfo(end.getPropsList());
-                    logger.info(transaction_format,
-                        new Object[] { entry.getHeader().getLogfileName(),
-                                String.valueOf(entry.getHeader().getLogfileOffset()),
-                                String.valueOf(entry.getHeader().getExecuteTime()), simpleDateFormat.format(date),
-                                entry.getHeader().getGtid(), String.valueOf(delayTime) });
-                }
-
-                continue;
-            }
-
-            if (entry.getEntryType() == EntryType.ROWDATA) {
-                RowChange rowChage = null;
-                try {
-                    rowChage = RowChange.parseFrom(entry.getStoreValue());
-                } catch (Exception e) {
-                    throw new RuntimeException("parse event has an error , data:" + entry.toString(), e);
-                }
-
-                EventType eventType = rowChage.getEventType();
-
-                logger.info(row_format,
-                    new Object[] { entry.getHeader().getLogfileName(),
-                            String.valueOf(entry.getHeader().getLogfileOffset()), entry.getHeader().getSchemaName(),
-                            entry.getHeader().getTableName(), eventType,
-                            String.valueOf(entry.getHeader().getExecuteTime()), simpleDateFormat.format(date),
-                            entry.getHeader().getGtid(), String.valueOf(delayTime) });
-
-                if (eventType == EventType.QUERY || rowChage.getIsDdl()) {
-                    logger.info(" sql ----> " + rowChage.getSql() + SEP);
-                    continue;
-                }
-
-                printXAInfo(rowChage.getPropsList());
-                for (RowData rowData : rowChage.getRowDatasList()) {
-                    if (eventType == EventType.DELETE) {
-                        printColumn(rowData.getBeforeColumnsList());
-                    } else if (eventType == EventType.INSERT) {
-                        printColumn(rowData.getAfterColumnsList());
-                    } else {
-                        printColumn(rowData.getAfterColumnsList());
-                    }
-                }
-            }
+        	if(CANAL_PARSE_DEBUG) {
+        		long executeTime = entry.getHeader().getExecuteTime();
+        		long delayTime = new Date().getTime() - executeTime;
+        		Date date = new Date(entry.getHeader().getExecuteTime());
+        		SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        		
+        		if (entry.getEntryType() == EntryType.TRANSACTIONBEGIN || entry.getEntryType() == EntryType.TRANSACTIONEND) {
+        			if (entry.getEntryType() == EntryType.TRANSACTIONBEGIN) {
+        				TransactionBegin begin = null;
+        				try {
+        					begin = TransactionBegin.parseFrom(entry.getStoreValue());
+        				} catch (InvalidProtocolBufferException e) {
+        					throw new RuntimeException("parse event has an error , data:" + entry.toString(), e);
+        				}
+        				// 打印事务头信息，执行的线程id，事务耗时
+        				logger.info(transaction_format,
+        						new Object[] { entry.getHeader().getLogfileName(),
+        								String.valueOf(entry.getHeader().getLogfileOffset()),
+        								String.valueOf(entry.getHeader().getExecuteTime()), simpleDateFormat.format(date),
+        								entry.getHeader().getGtid(), String.valueOf(delayTime) });
+        				logger.info(" BEGIN ----> Thread id: {}", begin.getThreadId());
+        				printXAInfo(begin.getPropsList());
+        			} else if (entry.getEntryType() == EntryType.TRANSACTIONEND) {
+        				TransactionEnd end = null;
+        				try {
+        					end = TransactionEnd.parseFrom(entry.getStoreValue());
+        				} catch (InvalidProtocolBufferException e) {
+        					throw new RuntimeException("parse event has an error , data:" + entry.toString(), e);
+        				}
+        				// 打印事务提交信息，事务id
+        				logger.info("----------------\n");
+        				logger.info(" END ----> transaction id: {}", end.getTransactionId());
+        				printXAInfo(end.getPropsList());
+        				logger.info(transaction_format,
+        						new Object[] { entry.getHeader().getLogfileName(),
+        								String.valueOf(entry.getHeader().getLogfileOffset()),
+        								String.valueOf(entry.getHeader().getExecuteTime()), simpleDateFormat.format(date),
+        								entry.getHeader().getGtid(), String.valueOf(delayTime) });
+        			}
+        			
+        			continue;
+        		}
+        		
+        		if (entry.getEntryType() == EntryType.ROWDATA) {
+        			RowChange rowChage = null;
+        			try {
+        				rowChage = RowChange.parseFrom(entry.getStoreValue());
+        			} catch (Exception e) {
+        				throw new RuntimeException("parse event has an error , data:" + entry.toString(), e);
+        			}
+        			
+        			EventType eventType = rowChage.getEventType();
+        			
+        			logger.info(row_format,
+        					new Object[] { entry.getHeader().getLogfileName(),
+        							String.valueOf(entry.getHeader().getLogfileOffset()), entry.getHeader().getSchemaName(),
+        							entry.getHeader().getTableName(), eventType,
+        							String.valueOf(entry.getHeader().getExecuteTime()), simpleDateFormat.format(date),
+        							entry.getHeader().getGtid(), String.valueOf(delayTime) });
+        			
+        			if (eventType == EventType.QUERY || rowChage.getIsDdl()) {
+        				logger.info(" sql ----> " + rowChage.getSql() + SEP);
+        				continue;
+        			}
+        			
+        			printXAInfo(rowChage.getPropsList());
+        			for (RowData rowData : rowChage.getRowDatasList()) {
+        				if (eventType == EventType.DELETE) {
+        					printColumn(rowData.getBeforeColumnsList());
+        				} else if (eventType == EventType.INSERT) {
+        					printColumn(rowData.getAfterColumnsList());
+        				} else {
+        					printColumn(rowData.getAfterColumnsList());
+        				}
+        			}
+        		}
+        	}
             monitor(entry);
         }
     }
@@ -430,6 +451,11 @@ public class AbstractCanalClientTest {
 					String table = entry.getHeader().getTableName();
 					List<RowData> rows = store.getRowDatasList();
 					if(rows!=null&&!rows.isEmpty()){
+						int i = 0;
+						int uc = 0;
+						int ic = 0;
+						int dc = 0;
+						int total = rows.size();
 						for(RowData row:rows){
 							long size = rtimer.getCount();
 							Context rctx = rtimer.time();
@@ -439,15 +465,21 @@ public class AbstractCanalClientTest {
 					    		String opt = "";
 					    		if(bcc>0&&acc>0){
 					    			opt = "Update";
+					    			uc++;
 					    		}else{
 					    			if(acc>0){
 					    				opt = "Insert";
+					    				ic++;
 					    			}else{
 					    				opt = "Delete";
+					    				dc++;
 					    			}
 					    		}
 					    		if(size>0&&size%10000==0){
-					    			logger.info("[Canal]Client Monitor{database:"+database+",table:"+table+",opt:"+opt+"}");
+					    			logger.info("[Canal]Client Monitor{database:"+database+",table:"+table+",opt:"+opt+",total:"+total+"}");
+					    		}
+					    		if(++i==total){
+					    			logger.info("[Canal]Client Monitor{database:"+database+",table:"+table+",total:"+total+",Update:"+uc+",Insert:"+ic+",Delete:"+dc+"}");
 					    		}
 					    	}finally{
 					    		rctx.close();
