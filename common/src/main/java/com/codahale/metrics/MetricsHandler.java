@@ -1,7 +1,10 @@
 package com.codahale.metrics;
 
+import java.util.Date;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+
+import org.apache.commons.lang.time.DateFormatUtils;
 
 public class MetricsHandler {
 	private static MetricRegistry registry = new MetricRegistry();
@@ -9,6 +12,7 @@ public class MetricsHandler {
 	private volatile static Map<String,Counter> counters = new ConcurrentHashMap<String,Counter>();
 	private volatile static Map<String,Histogram> histograms = new ConcurrentHashMap<String,Histogram>();
 	private volatile static Map<String,Timer> timers = new ConcurrentHashMap<String,Timer>();
+	public static final String DEFAULT_DATE_TIME_FORMAT = "yyyy-MM-dd HH:mm:ss";
 	public static ConsoleReporter console(){
 		ConsoleReporter console = ConsoleReporter.forRegistry(registry).build();
 		return console;
@@ -39,6 +43,7 @@ public class MetricsHandler {
 	}
 	public static String printlnMeters() {
 		String print = "\n\n";
+		String dateTime = DateFormatUtils.format(new Date(), DEFAULT_DATE_TIME_FORMAT);
 		if(meters!=null&&!meters.isEmpty()) {
 			for (String name : meters.keySet()) {
 				Meter obj = meters.get(name);
@@ -47,7 +52,7 @@ public class MetricsHandler {
 				double rate_5m = obj.getFiveMinuteRate();
 				double rate_15m = obj.getFifteenMinuteRate();
 				double rate_avg = obj.getMeanRate();
-				print += "-- Meter["+name+"] ----------------------------------------------------------------------\n";
+				print += "-- Meter["+name+"]("+dateTime+")----------------------------------------------------------------------\n";
 				print += "         count = "+count+"\n";
 				print += "     mean rate = "+String.format("%.2f", rate_avg)+" calls/second\n";
 				print += " 1-minute rate = "+String.format("%.2f",rate_1m)+" calls/second\n";
@@ -60,11 +65,12 @@ public class MetricsHandler {
 	}
 	public static String printlnCounters() {
 		String print = "\n\n";
+		String dateTime = DateFormatUtils.format(new Date(), DEFAULT_DATE_TIME_FORMAT);
 		if(counters!=null&&!counters.isEmpty()) {
 			for (String name : counters.keySet()) {
 				Counter obj = counters.get(name);
 				long count = obj.getCount();
-				print += "-- Counter["+name+"] ----------------------------------------------------------------------\n";
+				print += "-- Counter["+name+"]("+dateTime+")----------------------------------------------------------------------\n";
 				print += "         count = "+count+"\n";
 			}
 		}
@@ -73,6 +79,7 @@ public class MetricsHandler {
 	}
 	public static String printlnHistograms() {
 		String print = "\n\n";
+		String dateTime = DateFormatUtils.format(new Date(), DEFAULT_DATE_TIME_FORMAT);
 		if(histograms!=null&&!histograms.isEmpty()) {
 			for (String name : histograms.keySet()) {
 				Histogram obj = histograms.get(name);
@@ -88,7 +95,7 @@ public class MetricsHandler {
 				double avg = snapshot.getMean();
 				double median = snapshot.getMedian();
 				double stddev = snapshot.getStdDev();
-				print += "-- Histogram["+name+"] ----------------------------------------------------------------------\n";
+				print += "-- Histogram["+name+"]("+dateTime+")----------------------------------------------------------------------\n";
 				print += "         count = "+count+"\n";
 				print += "           min = "+String.format("%.2f",min)+" milliseconds\n";
 				print += "           max = "+String.format("%.2f",max)+" milliseconds\n";
@@ -107,6 +114,7 @@ public class MetricsHandler {
 	}
 	public static String printlnTimers() {
 		String print = "\n\n";
+		String dateTime = DateFormatUtils.format(new Date(), DEFAULT_DATE_TIME_FORMAT);
 		if(timers!=null&&!timers.isEmpty()) {
 			for (String name : timers.keySet()) {
 				Timer obj = timers.get(name);
@@ -126,7 +134,7 @@ public class MetricsHandler {
 				double avg = snapshot.getMean();
 				double median = snapshot.getMedian();
 				double stddev = snapshot.getStdDev();
-				print += "-- Timer["+name+"] ----------------------------------------------------------------------\n";
+				print += "-- Timer["+name+"]("+dateTime+")----------------------------------------------------------------------\n";
 				print += "         count = "+count+"\n";
 				print += "     mean rate = "+String.format("%.2f", rate_avg)+" calls/second\n";
 				print += " 1-minute rate = "+String.format("%.2f",rate_1m)+" calls/second\n";
